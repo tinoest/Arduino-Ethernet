@@ -123,6 +123,8 @@ private:
 	static uint8_t socketListen(uint8_t s);
 	// Send data (TCP)
 	static uint16_t socketSend(uint8_t s, const uint8_t * buf, uint16_t len);
+	static uint16_t bufferTCP(uint8_t s, uint16_t offset, const uint8_t * buf, uint16_t len);
+	static uint16_t sendTCP(uint8_t s);
 	static uint16_t socketSendAvailable(uint8_t s);
 	// Receive data (TCP)
 	static int socketRecv(uint8_t s, uint8_t * buf, int16_t len);
@@ -223,6 +225,8 @@ public:
 	virtual int availableForWrite(void);
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buf, size_t size);
+	virtual size_t buffer(const uint8_t *buf, size_t size);
+	virtual uint16_t transmit(void);
 	virtual int available();
 	virtual int read();
 	virtual int read(uint8_t *buf, size_t size);
@@ -248,6 +252,7 @@ public:
 private:
 	uint8_t _sockindex; // MAX_SOCK_NUM means client not in use
 	uint16_t _timeout;
+	uint16_t _offset;
 };
 
 

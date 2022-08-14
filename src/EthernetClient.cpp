@@ -66,6 +66,8 @@ int EthernetClient::connect(IPAddress ip, uint16_t port)
 	}
 	Ethernet.socketClose(_sockindex);
 	_sockindex = MAX_SOCK_NUM;
+	_offset = 0;
+
 	return 0;
 }
 
@@ -86,6 +88,21 @@ size_t EthernetClient::write(const uint8_t *buf, size_t size)
 	if (Ethernet.socketSend(_sockindex, buf, size)) return size;
 	setWriteError();
 	return 0;
+}
+
+size_t EthernetClient::buffer(const uint8_t *buf, size_t size)
+{
+	if (_sockindex >= MAX_SOCK_NUM) return 0;
+	uint16_t length = Ethernet.bufferTCP(_sockindex, _offset, buf, size);
+	_offset += length;
+
+	return length;
+}
+
+uint16_t EthernetClient::transmit(void)
+{
+	_offset = 0;
+	return Ethernet.sendTCP(_sockindex);
 }
 
 int EthernetClient::available()
