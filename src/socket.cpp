@@ -447,17 +447,30 @@ uint16_t EthernetClass::socketSend(uint8_t s, const uint8_t * buf, uint16_t len)
 	// copy data
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	write_data(s, 0, (uint8_t *)buf, ret);
-	SPI.endTransaction();
+	W5100.execCmdSn(s, Sock_SEND);
 
-	ret = sendTCP(s);
+	/* +2008.01 bj */
+	while ( (W5100.readSnIR(s) & SnIR::SEND_OK) != SnIR::SEND_OK ) {
+		/* m2008.01 [bj] : reduce code */
+		if ( W5100.readSnSR(s) == SnSR::CLOSED ) {
+			SPI.endTransaction();
+			return 0;
+		}
+		SPI.endTransaction();
+		yield();
+		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+	}
+	/* +2008.01 bj */
+	W5100.writeSnIR(s, SnIR::SEND_OK);
+	SPI.endTransaction();
 
 	return ret;
 }
 
 uint16_t EthernetClass::bufferTCP(uint8_t s, uint16_t offset, const uint8_t * buf, uint16_t len)
 {
-	uint16_t ret=0;
-	uint16_t freesize=0;
+	uint16_t ret = 0;
+	uint16_t freesize = 0;
 
 	if (len > W5100.SSIZE) {
 		ret = W5100.SSIZE; // check size not to exceed MAX size.
@@ -484,7 +497,7 @@ uint16_t EthernetClass::bufferTCP(uint8_t s, uint16_t offset, const uint8_t * bu
 
 uint16_t EthernetClass::sendTCP(uint8_t s)
 {
-	uint16_t ret=0;
+	uint16_t ret = 0;
 
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 
