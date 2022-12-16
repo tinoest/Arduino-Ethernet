@@ -497,8 +497,6 @@ uint16_t EthernetClass::bufferTCP(uint8_t s, uint16_t offset, const uint8_t * bu
 
 uint16_t EthernetClass::sendTCP(uint8_t s)
 {
-	uint16_t ret = 0;
-
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 
 	W5100.execCmdSn(s, Sock_SEND);
@@ -517,7 +515,7 @@ uint16_t EthernetClass::sendTCP(uint8_t s)
 	/* +2008.01 bj */
 	W5100.writeSnIR(s, SnIR::SEND_OK);
 	SPI.endTransaction();
-	return ret;
+	return 1;
 }
 
 uint16_t EthernetClass::socketSendAvailable(uint8_t s)
